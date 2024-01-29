@@ -9,7 +9,7 @@ if [[ $UID != 0 ]]; then
 fi
 
 #create virtual disk file
-if ! [ "$TYPE" == "img" ]; then
+if [ "$TYPE" == "img" ]; then
     printf "${PREFIX_LOG}Creating a virtual image(dev.img).${RESET}"
     rm -f $VRT_DISK
     dd if=/dev/zero of=$VRT_DISK bs=1M count=1024

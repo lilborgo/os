@@ -7,5 +7,5 @@ mk-sd:
 	@bash scripts/mk-sd.sh
 
 clean:
-	@yes | rm -f -r cache/
-	@mkdir cache
+	@yes | rm -f -r build/
+	@mkdir build

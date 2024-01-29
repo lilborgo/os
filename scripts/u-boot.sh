@@ -1,51 +1,47 @@
 #!/bin/bash
 
-export CROSS_COMPILE=aarch64-linux-gnu-
-export BOARD=orangepi_zero3
-export SOC_PLAT=sun50i_h616
-export BL31_PATH=cache/arm-trusted-firmware/build/${SOC_PLAT}/debug/bl31.bin
-export UBOOTBIN_PATH=u-boot/u-boot-sunxi-with-spl.bin
+source scripts/var.sh
 
 # clone the u-boot repository
-if ! [ -d cache/u-boot/ ]; then
-    printf "\033[0;32mlog: Downloading u-boot.\033[0m\n"
-    git clone --depth=1 git://git.denx.de/u-boot.git cache/u-boot
+if ! [ -d ${U_BOOT_DIR} ]; then
+    printf "${PREFIX_LOG}Downloading u-boot.${RESET}"
+    git clone --depth=1 ${U_BOOT_GIT} ${U_BOOT_DIR}
 else
-    printf "\033[0;32mlog: Not downloading u-boot.\033[0m\n"
+    printf "${PREFIX_LOG}Not downloading u-boot.${RESET}"
 fi
 
 # clone the ATF repository
-if ! [ -d cache/arm-trusted-firmware/ ]; then
-    printf "\033[0;32mlog: Downloading ATF.\033[0m\n"
-    git clone --depth=1 https://github.com/ARM-software/arm-trusted-firmware.git cache/arm-trusted-firmware
+if ! [ -d ${ATF_DIR} ]; then
+    printf "${PREFIX_LOG}Downloading ATF.${RESET}"
+    git clone --depth=1 ${ATF_GIT} ${ATF_DIR}
 else
-    printf "\033[0;32mlog: Not downloading ATF.\033[0m\n"
+    printf "${PREFIX_LOG}Not downloading ATF.${RESET}"
 fi
 
 # compiling ATF
-
 if ! [ -f $BL31_PATH ]; then
-    printf "\033[0;32mlog: Building bl31.bin.\033[0m\n"
-    cd cache/arm-trusted-firmware/
+    printf "${PREFIX_LOG}Building bl31.bin.${RESET}"
+    cd ${ATF_DIR}
     make -j$(nproc) PLAT=$SOC_PLAT DEBUG=1 bl31
     cd ../../
 else
-    printf "\033[0;32mlog: Not building bl31.bin.\033[0m\n"
+    printf "${PREFIX_LOG}Not building bl31.bin.${RESET}"
 fi
-##############
 
 # compiling u-boot
-if ! [ -f cache/u-boot/u-boot-sunxi-with-spl.bin ]; then
-    printf "\033[0;32mlog: Building u-boot.bin\033[0m\n"
-    cd cache/u-boot/
+if ! [ -f ${UBOOTBIN_PATH} ]; then
+    printf "${PREFIX_LOG}Building u-boot.bin${RESET}"
+    cd ${U_BOOT_DIR}
 
     if ! [ -f .config ]; then
-        printf "\033[0;32mlog: Create default config file.\033[0m\n"
+        printf "${PREFIX_LOG}Create default config file.${RESET}"
         make -j$(nproc) ${BOARD}_defconfig
         make -j$(nproc) menuconfig
     fi
 
     make -j$(nproc) BL31=../../${BL31_PATH}
 else
-    printf "\033[0;32mlog: Not building bootloader\033[0m\n"
+    printf "${PREFIX_LOG}Not building bootloader${RESET}"
 fi
+
+printf "${PREFIX_LOG}Done u-boot.${RESET}"

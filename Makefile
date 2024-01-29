@@ -3,8 +3,8 @@
 u-boot:
 	@bash scripts/u-boot.sh
 
-mk-sd:
-	@bash scripts/mk-sd.sh
+img:
+	@bash scripts/img.sh
 
 clean:
 	@yes | rm -f -r build/

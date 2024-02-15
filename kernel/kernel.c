@@ -1,17 +1,15 @@
+#include <io/uart.h>
+#include <debug.h>
+#include <string.h>
 
-volatile unsigned char *uart = (unsigned char *) 0x09000000;
+void kernel_main()
+{
+    char buff[100];
+    //unsigned long sp = debug_get_sp();
+    uart_init();
 
-void putc(char c) {
-    *uart = c;
-}
+    sprintf(buff, "prova: %d, %d\n", 100, -87);
 
-void print(char *s) {
-    while(*s != '\0') {
-        putc(*s);
-        s++;
-    }
-}
-
-void kmain(void) {
-     print("Hello world!\n\0");
+    uart_write(buff);
+    while (1);
 }

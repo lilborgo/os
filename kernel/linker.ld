@@ -1,35 +1,33 @@
-ENTRY(_start)
- 
 SECTIONS
 {
-    . = 0x8000;
-    __start = .;
-    .text :
-    {
-        KEEP(*(.text.boot))
-        *(.text)
-    }
-    . = ALIGN(4096);
-    .rodata :
-    {
-        *(.rodata)
-    }
-    . = ALIGN(4096);
-    .data :
-    {
-        *(.data)
-    }
-    . = ALIGN(4096);
-    __bss_start = .;
-    .bss :
-    {
-        bss = .;
-        *(.bss)
+    . = 0x80000;     /* Kernel load address for AArch64 */
+    .text : {
+        KEEP(*(.text.boot)) 
+        *(.text .text.* .gnu.linkonce.t*) 
     }
 
-#    /DISCARD/ : { *(.comment) *(.gnu*) *(.note*) *(.eh_frame*) }
-    . = ALIGN(4096); 
-    __bss_end = .;
-    __bss_size = __bss_end - __bss_start;
-    __end = .;
+    .rodata : { 
+        *(.rodata .rodata.* .gnu.linkonce.r*)
+    }
+
+    PROVIDE(_data = .);
+
+    .data : { 
+        *(.data .data.* .gnu.linkonce.d*)
+    }
+
+    .bss (NOLOAD) : {
+        . = ALIGN(16);
+        __bss_start = .;
+        *(.bss .bss.*)
+        *(COMMON)
+        __bss_end = .;
+    }
+    _end = .;
+
+    __stack = 0x40400000; /*0x400000;*/
+
+    __bss_size = (__bss_end - __bss_start)>>3;
+
+   /DISCARD/ : { *(.comment) *(.gnu*) *(.note*) *(.eh_frame*) }
 }

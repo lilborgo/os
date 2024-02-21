@@ -1,16 +1,15 @@
-#include <types.h>
 #include <memory.h>
 
 /**
  *  Write 32 bit to the memory address.
  */
-void mem_write32(addr_t addr, u32 val){
-    *(u32*)addr = val;
+void inline mem_write32(addr_t addr, raw32 val){
+    *(volatile raw32*)addr = val;
 }
 
 /**
  *  Read 32 bit to the memory address.
  */
-u32 mem_read32(addr_t addr) { 
-    return *(u32*)addr; 
+raw32 inline mem_read32(addr_t addr) {
+    return *(volatile raw32*)addr;
 }

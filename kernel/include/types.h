@@ -31,4 +31,12 @@ typedef u64 addr_t;
 //argument list
 typedef __builtin_va_list va_list;
 
+//boolean
+typedef u8 bool;
+#define false 0
+#define true 1
+
+//memory
+typedef u32 raw32;
+
 #endif //_TYPES_H_

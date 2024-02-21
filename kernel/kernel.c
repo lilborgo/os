@@ -1,15 +1,9 @@
-#include <io/uart.h>
-#include <debug.h>
-#include <string.h>
+#include <io/uart1.h>
 
-void kernel_main()
-{
-    char buff[100];
-    //unsigned long sp = debug_get_sp();
-    uart_init();
+void kernel_main(){
 
-    sprintf(buff, "prova: %d, %d\n", 100, -87);
+	uart1_init();
+	uart1_puts("Hello, kernel World!\r\n");
 
-    uart_write(buff);
-    while (1);
+	while (1);
 }

@@ -1,5 +1,3 @@
-
-#include <types.h>
 #include <macros.h>
 #include <string.h>
 
@@ -12,10 +10,9 @@ int sprintf(char* str, char* format, ...){
 		if(*format == '%'){
 			format++;
 
-
 			switch(*format){
 				case 'd':
-					str += itoa(str, (i64)va_arg(list, i32));
+					str += itoa(str, (i64)va_arg(list, i32))-1;
 					break;
 			}
 		}
@@ -36,8 +33,9 @@ i32 itoa(char* str, i64 val){
 	i64 n;
 	i32 digit;
 	char* start;
+	i8 i;
 
-	n = val;
+	n = ABS(val);
 	digit = 0;
 
 	while(n != 0){
@@ -50,14 +48,15 @@ i32 itoa(char* str, i64 val){
 
 	start = str;
 	str += digit;
-	n = val;
-	*(str+1) = '\0';
+	n = ABS(val);
+	*(str) = '\0';
 
-	while(start != str){
-		*str = (n%10) + '0';
-		n /= 10;
+	do{
 		str--;
-	}
+		i = (i8)n%10;
+		*str = i + '0';
+		n /= 10;
+	}while(start != str);
 
 	if(val < 0)
 		*start = '-';

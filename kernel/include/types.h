@@ -39,4 +39,9 @@ typedef u8 bool;
 //memory
 typedef u32 raw32;
 
+//gpio
+typedef u8 gpio_pin;
+typedef u8 gpio_pin_func;
+typedef u8 gpio_pud_mode;
+
 #endif //_TYPES_H_

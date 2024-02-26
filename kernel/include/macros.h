@@ -24,5 +24,8 @@
 //nop instruction
 #define NOP ASM("nop")
 
+//used to describe code
+#define UNSAFE
+
 
 #endif //_MACROS_H_

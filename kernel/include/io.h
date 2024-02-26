@@ -1,12 +1,14 @@
 /**
- * 	This file contains all the function used to manage raw memory.
- *	You can read and write from memory.
+ * This file contains all the functions and macro used
+ * to control the io of the raspberry pi 3b.
  */
 
-#ifndef _MEMORY_H_
-#define _MEMORY_H_
+#ifndef _IO_H_
+#define _IO_H_
 
 #include <types.h>
+
+//**********************************MEMORY**********************************
 
 /**
  *	Write 32bit to the memory address.
@@ -23,7 +25,7 @@ raw32 mem_read32(addr_t addr);
 #define MMIO_BASE       0x3F000000
 
 /**
- *  GPIO registers, check datasheet.
+ *  GPIO registers, check datasheet. (page 90)
  */
 #define GPFSEL0         (MMIO_BASE+0x00200000)
 #define GPFSEL1         (MMIO_BASE+0x00200004)
@@ -54,7 +56,7 @@ raw32 mem_read32(addr_t addr);
 #define GPPUDCLK1       (MMIO_BASE+0x0020009C)
 
 /**
- *  Uart register addresses, check datasheet.
+ *  Uart register addresses, check datasheet. (page 8)
  */
 #define AUX_IRQ             (MMIO_BASE+0x00215000)
 #define AUX_ENABLES         (MMIO_BASE+0x00215004)
@@ -70,4 +72,53 @@ raw32 mem_read32(addr_t addr);
 #define AUX_MU_STAT_REG     (MMIO_BASE+0x00215064)
 #define AUX_MU_BAUD_REG     (MMIO_BASE+0x00215068)
 
-#endif //_MEMORY_H_
+//**********************************GPIO**********************************
+
+//gpio functions (page 91)
+#define GPIO_INPUT  0
+#define GPIO_OUTPUT 1
+#define GPIO_FUNC0  4
+#define GPIO_FUNC1  5
+#define GPIO_FUNC2  6
+#define GPIO_FUNC3  7
+#define GPIO_FUNC4  3
+#define GPIO_FUNC5  2
+
+//gpio pull up/down modes (page 100)
+#define GPIO_P_OFF 0
+#define GPIO_PD_ON 1
+#define GPIO_PU_ON 2
+
+/**
+ * Set gpio pin function.
+ */
+void gpio_fsel(gpio_pin pin, gpio_pin_func mode);
+
+/**
+ *  Set gpio pin pull up/down.
+ */
+void gpio_ppud(gpio_pin pin, gpio_pud_mode mode);
+
+//**********************************UART1**********************************
+
+/**
+ *  Initialize the uart1
+ */
+void uart1_init();
+
+/*
+ * Write character.
+ */
+void uart1_write(char c);
+
+/**
+ *  Read character.
+ */
+char uart1_getc();
+
+/*
+ *  Write a string to uart1
+ */
+void uart1_puts(char *s);
+
+#endif //_IO_H_

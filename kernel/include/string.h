@@ -8,15 +8,30 @@
 #include <types.h>
 
 /**
- *	Print string to a string
+ *	Print formatted string to a string.
+ *  It need also specified the size of the buffer
+ *  Returns the number of characted printed.
+ *  If something cant be written, it puts %% but its not
+ *  always the case.
  */
-int sprintf(char* str, char* format, ...);
+i32 snprintf(char* buff, char* format, u64 size, ...);
 
+/**
+ *	Same of snprintf bug also require a va_list
+ */
+i32 vsnprintf(char* buff, char* format, u64 size, va_list list);
 
 /**
  * 	Convert integer to array.
- * 	Return number of character written.
+ * 	Return contains the number of digit written.
+ *  It requires the size of the buffer
  */
-i32 itoa(char* str, i64 val);
+u32 itoa(char* buff, i64 val, i8 base, u64 size);
+
+/**
+ * Convert unsigned integer to array.
+ * Return contains the number of digit written.
+ */
+u32 utoa(char* buff, u64 val, i8 base, u64 size);
 
 #endif //_STRING_H_

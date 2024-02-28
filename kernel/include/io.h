@@ -7,6 +7,7 @@
 #define _IO_H_
 
 #include <types.h>
+#include <macros.h>
 
 //**********************************MEMORY**********************************
 
@@ -15,12 +16,25 @@
  */
 void mem_write32(addr_t addr, raw32 val);
 
-
 /**
  *	Read 32bit from the memory address.
  */
 raw32 mem_read32(addr_t addr);
 
+/**
+ *	Write 8bit to the memory address.
+ */
+void mem_write8(addr_t addr, raw8 val);
+
+/**
+ *	Read 8bit from the memory address.
+ */
+raw8 mem_read8(addr_t addr);
+
+/**
+ * Copy memory from source do destination.
+ */
+void mem_cpy(addr_t dest, addr_t source, u64 size);
 
 #define MMIO_BASE       0x3F000000
 
@@ -74,51 +88,67 @@ raw32 mem_read32(addr_t addr);
 
 //**********************************GPIO**********************************
 
-//gpio functions (page 91)
-#define GPIO_INPUT  0
-#define GPIO_OUTPUT 1
-#define GPIO_FUNC0  4
-#define GPIO_FUNC1  5
-#define GPIO_FUNC2  6
-#define GPIO_FUNC3  7
-#define GPIO_FUNC4  3
-#define GPIO_FUNC5  2
-
-//gpio pull up/down modes (page 100)
-#define GPIO_P_OFF 0
-#define GPIO_PD_ON 1
-#define GPIO_PU_ON 2
-
 /**
  * Set gpio pin function.
  */
-void gpio_fsel(gpio_pin pin, gpio_pin_func mode);
+void TH_UN gpio_fsel(gpio_pin_t pin, gpio_pin_func_t mode);
 
 /**
  *  Set gpio pin pull up/down.
  */
-void gpio_ppud(gpio_pin pin, gpio_pud_mode mode);
+void TH_UN gpio_ppud(gpio_pin_t pin, gpio_pud_mode_t mode);
 
 //**********************************UART1**********************************
 
 /**
  *  Initialize the uart1
  */
-void uart1_init();
+void TH_UN uart1_init();
 
 /*
  * Write character.
  */
-void uart1_write(char c);
+void TH_UN uart1_write(char c);
 
 /**
  *  Read character.
  */
-char uart1_getc();
+char TH_UN uart1_getc();
 
 /*
  *  Write a string to uart1
  */
-void uart1_puts(char *s);
+void TH_UN uart1_puts(char *s);
+
+//**********************************MAILBOX**********************************
+//reference: https://github.com/raspberrypi/firmware/wiki
+
+//registers of the MAILBOX
+#define MBOX_BASE       (MMIO_BASE+0x0000B880)
+#define MBOX_READ       (MBOX_BASE+0x0))
+#define MBOX_POLL       (MBOX_BASE+0x10)
+#define MBOX_SENDER     (MBOX_BASE+0x14)
+#define MBOX_STATUS     (MBOX_BASE+0x18)
+#define MBOX_CONFIG     (MBOX_BASE+0x1C)
+#define MBOX_WRITE      (MBOX_BASE+0x20)
+//mail box status
+#define MBOX_RESPONSE   0x80000000
+#define MBOX_FULL       0x80000000
+#define MBOX_EMPTY      0x40000000
+
+//positions of the data
+#define MBOX_INDX_POS 0
+#define MBOX_SIZE_POS 1
+#define MBOX_RQRE_POS 2
+
+/**
+ * Send the message to the mailbox.
+ */
+bool mbox_call(mb_ch_t ch, mb_msg_t* mbox);
+
+/**
+ *  Init the mailbox message with default parameters.
+ */
+void mbox_init(mb_msg_t* mbox);
 
 #endif //_IO_H_

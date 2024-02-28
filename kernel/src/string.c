@@ -2,8 +2,8 @@
 #include <macros.h>
 
 //this function is responsabile to convert a type to the corresponding string
-static u32 print_format(char* buff, char* format, u32 left, va_list* list){
-	u32 size;
+static u64 print_format(char* buff, char* format, u32 left, va_list* list){
+	u64 size;
 
 	switch(*format){
 		//convert integer
@@ -52,9 +52,9 @@ static u32 print_format(char* buff, char* format, u32 left, va_list* list){
 	return size;
 }
 
-i32 vsnprintf(char* buff, char* format, u64 size, va_list list){
+u64 vsnprintf(char* buff, char* format, u64 size, va_list list){
 	u64 left;
-	u32 used;
+	u64 used;
 
 	//set the number of character that can be written
 	left = size - 1;
@@ -101,16 +101,42 @@ i32 vsnprintf(char* buff, char* format, u64 size, va_list list){
 }
 
 //print to a string
-i32 snprintf(char* buff, char* format, u64 size, ...){
+u64 snprintf(char* buff, char* format, u64 size, ...){
 	va_list list;
 	va_start(list, size);
 
 	return vsnprintf(buff, format, size, list);
 }
 
+//copy string to another
+void strcpy(char* dest, char* source, u64 size){
+	while(size && *source){
+		*dest = *source;
+		dest++;
+		source++;
+		size--;
+	}
+
+	*dest = '\0';
+}
+
+//get the length of the string
+u64 strlen(char* s){
+	u64 size;
+
+	size = 0;
+
+	while(*s){
+		s++;
+		size++;
+	}
+
+	return size;
+}
+
 //convert regular integer to array
-u32 itoa(char* buff, i64 val, i8 base, u64 size){
-	i8 sum;
+u8 itoa(char* buff, i64 val, i8 base, u64 size){
+	u8 sum;
 
 	sum = 0;
 
@@ -130,9 +156,9 @@ u32 itoa(char* buff, i64 val, i8 base, u64 size){
 }
 
 //convert unsigned integer to arrat
-u32 utoa(char* buff, u64 val, i8 base, u64 size){
+u8 utoa(char* buff, u64 val, i8 base, u64 size){
 	u64 n;
-	u32 digit;
+	u8 digit;
 	char* start;
 	u8 i;
 
@@ -146,7 +172,7 @@ u32 utoa(char* buff, u64 val, i8 base, u64 size){
 	}while(n != 0);
 
 	//if the number of digit is too much just return
-	if(digit+1 > size)
+	if((u64)digit+1 > size)
 		return 0;
 
 	start = buff;

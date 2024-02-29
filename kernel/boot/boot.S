@@ -1,15 +1,15 @@
 .section ".text.boot"
 
-// Make _start global.
 .globl _start
-// Entry point for the kernel. Registers:
-// x0 -> 32 bit pointer to DTB in memory (primary core only) / 0 (secondary cores)
-// x1 -> 0
-// x2 -> 0
-// x3 -> 0
-// x4 -> 32 bit kernel entry point, _start location
+
+//entry point
+//x0 -> 32 bit pointer to DTB in memory (primary core only) / 0 (secondary cores)
+//x1 -> 0
+//x2 -> 0
+//x3 -> 0
+//x4 -> 32 bit kernel entry point, _start location
 _start:
-    // set stack before our code
+    //set stack before our code
     ldr     x5, =_start
     mov     sp, x5
 
@@ -18,16 +18,19 @@ _start:
     bl kernel_main
     b halt
 
+//halt the cpu core
 halt:
     wfe
     b halt
 
+//check if we are on the main core, if not: halt
 check_core:
     mrs     x5, mpidr_el1
     and     x5, x5, #3
     cbnz     x5, halt
     ret
 
+//clean bss section
 clear_bss:
     ldr     x5, =__bss_start
     ldr     w6, =__bss_size

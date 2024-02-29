@@ -12,108 +12,79 @@ OBJDU = aarch64-linux-gnu-objdump
 QEMU = qemu-system-aarch64
 #kill qemu if exist
 KILL = pkill -9 -f $(QEMU)
-#kernel name
-KERNEL=kernel8
-#kernel elf
-KERNEL_ELF=$(KERNEL).elf
-#kernel img
-KERNEL_IMG=$(KERNEL).img
 
 #include folder
-INCLUDE_SRC = kernel/include
+INC_DIR = kernel/include
 #kernel folder
-KERNEL_SRC = kernel
-#boot folder
-BOOT_SRC = $(KERNEL_SRC)/boot
-#src folder
-SRC = $(KERNEL_SRC)/src
+KER_DIR = kernel
 #build folder
-BUILD = build
-#kernel obj folder
-KERNEL_OBJ = $(BUILD)/$(KERNEL_SRC)
-#boot obj folder
-BOOT_OBJ = $(BUILD)/$(BOOT_SRC)
-#src files
-SRC_OBJ = $(BUILD)/$(SRC)
-#io obj folder
+BUILD_DIR = build
+#output name
+KR_NAME = kernel-64
+#kernel elf
+KER_ELF = $(BUILD_DIR)/$(KR_NAME).elf
+#kernel img
+KER_IMG = $(BUILD_DIR)/$(KR_NAME).img
 
 #gcc flags
-CC_FLAGS = -Wall -Wextra -ffreestanding -mcpu=cortex-a53 -mgeneral-regs-only -I $(INCLUDE_SRC) -g -ggdb
+CC_FLAGS = -Wall -Wextra -ffreestanding -mcpu=cortex-a53 -mgeneral-regs-only -I $(INC_DIR) -g -ggdb
 #assembler flags
 AS_FLAGS = -g
 #linker flags
 LD_FLAGS = -nostdlib
 #qemu flags
-QM_FLAGS = -machine raspi3b -kernel $(KERNEL_OBJ)/$(KERNEL_ELF) -serial null -serial stdio
+QM_FLAGS = -machine raspi3b -kernel $(KER_ELF) -serial null -serial stdio
 #gdb flags
-GDB_FLAGS = $(KERNEL_OBJ)/$(KERNEL_ELF) -ex "target remote localhost:1234" -ex "lay split" -ex "set scheduler-locking step"
+GDB_FLAGS = $(KER_ELF) -ex "target remote localhost:1234" -ex "lay split" -ex "set scheduler-locking step"
+
 
 #linker file
-LINKER = $(KERNEL_SRC)/linker.ld
+LINKER = $(KER_DIR)/link.ld
 #object files
-OBJ =	$(KERNEL_OBJ)/kernel.o\
-	$(SRC_OBJ)/io.o\
-	$(SRC_OBJ)/debug.o\
-	$(SRC_OBJ)/string.o\
+SRCS =	$(KER_DIR)/main.c\
+	$(KER_DIR)/boot/boot.S\
+	$(KER_DIR)/hw/gpio.c\
+	$(KER_DIR)/hw/uart1.c\
+	$(KER_DIR)/libc/string.c\
+	$(KER_DIR)/libc/stdio.c
 
-$(KERNEL_ELF): $(OBJ) $(BOOT_OBJ)/boot.o
-	@printf "LD $(KERNEL_OBJ)/$(KERNEL_ELF)\n"
-	@$(LD) $(LD_FLAGS) $(OBJ) $(BOOT_OBJ)/boot.o -T $(LINKER) -o $(KERNEL_OBJ)/$(KERNEL_ELF)
+OBJS =$(SRCS:%=$(BUILD_DIR)/%.o)
 
-$(KERNEL_IMG): $(KERNEL_ELF)
-	@printf "OC $(KERNEL_OBJ)/$(KERNEL_IMG)\n"
-	@$(OBJCP) -O binary $(KERNEL_OBJ)/$(KERNEL_ELF) $(KERNEL_OBJ)/$(KERNEL_IMG)
+kernel: $(KER_ELF)
+	@true
 
-install: $(KERNEL_IMG)
-	@mkdir -p boot
-	@sudo mount /dev/sda1 boot
-	@sudo cp  $(KERNEL_OBJ)/$(KERNEL_IMG) boot/$(KERNEL_IMG)
-	@sudo umount boot
-	@printf "INSTALLED"
+$(KER_ELF): $(OBJS)
+	@printf "\tLD $(KER_ELF)\n"
+	@$(LD) $(LD_FLAGS) $(OBJS) -T $(LINKER) -o $(KER_ELF)
 
-qemu: $(KERNEL_ELF)
+$(KER_IMG): $(KER_ELF)
+	@printf "\tOC $(KER_IMG)\n"
+	@$(OBJCP) -O binary $(KER_ELF) $(KER_IMG)
+
+qemu: $(KER_ELF)
 	$(QEMU) $(QM_FLAGS)
 
-gdb: $(KERNEL_ELF)
+gdb: $(KER_ELF)
 	$(QEMU) -s -S $(QM_FLAGS) & gdb $(GDB_FLAGS)
 	-$(KILL)
-	@printf "TERMINATED"
 
 objd:
-	@$(OBJDU) -D -s $(KERNEL_OBJ)/$(KERNEL_ELF) | less
-
-kill:
-	-$(KILL)
-	@printf "TERMINATED"
+	@$(OBJDU) -D -s $(KER_ELF) | less
 
 img:
-	@bash scripts/img.sh
+	@bash mk-img.sh
 
 clean:
-	@yes | rm -f -r build/
-	@mkdir build
-	@mkdir build/kernel
-	@mkdir build/kernel/boot
-	@mkdir build/kernel/src
-	@mkdir build/kernel/src/io
+	@yes | rm -f -r build
 
-$(BOOT_OBJ)/boot.o : $(BOOT_SRC)/boot.S
-	@printf "AS $(BOOT_SRC)/boot.S\n"
-	@$(AS) $(AS_FLAGS) -c $(BOOT_SRC)/boot.S -o $(BOOT_OBJ)/boot.o
+$(BUILD_DIR)/%.S.o: %.S
+	@printf "\tAS $<\n"
+	@mkdir -p $(dir $@)
+	@$(AS) $(AS_FLAGS) -c $< -o $@
 
-$(KERNEL_OBJ)/kernel.o : $(KERNEL_SRC)/kernel.c
-	@printf "CC $(KERNEL_SRC)/kernel.c\n"
-	@$(CC) $(CC_FLAGS) -o $(KERNEL_OBJ)/kernel.o -c $(KERNEL_SRC)/kernel.c
+$(BUILD_DIR)/%.c.o: %.c
+	@printf "\tCC $<\n"
+	@mkdir -p $(dir $@)
+	@$(CC) $(CC_FLAGS) -c $< -o $@
 
-$(SRC_OBJ)/io.o : $(SRC)/io.c
-	@printf "CC $(SRC)/io.c\n"
-	@$(CC) $(CC_FLAGS) -o $(SRC_OBJ)/io.o -c $(SRC)/io.c
-
-$(SRC_OBJ)/debug.o : $(SRC)/debug.S	
-	@printf "AS $(SRC)/debug.S\n"
-	@$(AS) $(AS_FLAGS) -o $(SRC_OBJ)/debug.o $(SRC)/debug.S
-
-$(SRC_OBJ)/string.o : $(SRC)/string.c
-	@printf "CC $(SRC)/string.c\n"
-	@$(CC) $(CC_FLAGS) -o $(SRC_OBJ)/string.o -c $(SRC)/string.c
 

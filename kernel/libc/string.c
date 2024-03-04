@@ -104,3 +104,12 @@ int8_t utoa(char* buff, uint64_t val, int8_t base, int64_t maxlen){
 	//the number of digit does not include zero terminator
 	return digit;
 }
+
+
+void memset(volatile void* buff, int32_t val, uint64_t b){
+	while(b){
+		*((int8_t*)buff) = (int8_t)val;
+		b--;
+	}
+}
+

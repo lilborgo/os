@@ -1,8 +1,8 @@
-#include <arch/arm64/uart1.h>
+#include <arch/arm64/uart0.h>
 #include <libc/stdio.h>
 
 void kernel_main(){
-	uart1_init();
+	uart0_init();
 	char buff[115];
 
 	snprintf(buff, "Hello kernel world! %d %ld %u %lu 0x%x 0x%lx %%", 115,
@@ -14,7 +14,7 @@ void kernel_main(){
 		(uint64_t)24398234829347
 	);
 
-	uart1_puts(buff);
+	uart0_puts(buff);
 
 	while(1);
 }

@@ -38,4 +38,10 @@ int8_t utoa(char* buff, uint64_t val, int8_t base, int64_t maxlen);
  */
 int8_t itoa(char* buff, int64_t val, int8_t base, int64_t maxlen);
 
+/**
+ * Set the entire memory block to a value.
+ * NOTE: the value is a int but it will be casted to int8_t
+ */
+void memset(volatile void* buff, int32_t val, uint64_t b);
+
 #endif //_STRING_H_

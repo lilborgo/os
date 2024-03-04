@@ -24,7 +24,7 @@ AS_FLAGS = -g
 #linker flags
 LD_FLAGS = -nostdlib
 #qemu flags
-QM_FLAGS = -machine raspi3b -kernel $(KER_ELF) -serial null -serial stdio
+QM_FLAGS = -machine raspi3b -kernel $(KER_ELF) -serial stdio
 #gdb flags
 GDB_FLAGS = $(KER_ELF) -ex "target remote localhost:1234" -ex "lay split" -ex "set scheduler-locking step"
 

@@ -1,15 +1,4 @@
-#compiler
-CC = aarch64-linux-gnu-gcc
-#assembler
-AS = aarch64-linux-gnu-as
-#linker
-LD = aarch64-linux-gnu-ld
-#object copy
-OBJCP = aarch64-linux-gnu-objcopy
-#object dump
-OBJDU = aarch64-linux-gnu-objdump
-#qemu binary
-QEMU = qemu-system-aarch64
+include .config
 #kill qemu if exist
 KILL = pkill -9 -f $(QEMU)
 
@@ -26,8 +15,10 @@ KER_ELF = $(BUILD_DIR)/$(KR_NAME).elf
 #kernel img
 KER_IMG = $(BUILD_DIR)/$(KR_NAME).img
 
+#convert .config file into macros
+CC_MACRO = $(awk -F'=' '/^[^#]/ {printf "-D"$1"=" $2" " }' .config)
 #gcc flags
-CC_FLAGS = -Wall -Wextra -ffreestanding -mcpu=cortex-a53 -mgeneral-regs-only -I $(INC_DIR) -g -ggdb
+CC_FLAGS = -Wall -Wextra -ffreestanding $(CC_MACRO) $(CF_EXTRA) -I $(INC_DIR) -g -ggdb
 #assembler flags
 AS_FLAGS = -g
 #linker flags
@@ -37,16 +28,14 @@ QM_FLAGS = -machine raspi3b -kernel $(KER_ELF) -serial null -serial stdio
 #gdb flags
 GDB_FLAGS = $(KER_ELF) -ex "target remote localhost:1234" -ex "lay split" -ex "set scheduler-locking step"
 
-
 #linker file
 LINKER = $(KER_DIR)/link.ld
+
 #object files
-SRCS =	$(KER_DIR)/main.c\
-	$(KER_DIR)/boot/boot.S\
-	$(KER_DIR)/hw/gpio.c\
-	$(KER_DIR)/hw/uart1.c\
-	$(KER_DIR)/libc/string.c\
-	$(KER_DIR)/libc/stdio.c
+include $(KER_DIR)/make
+SRCS = 	$(LIBC_SRCS)\
+	$(ARM64_SRCS)\
+	$(KER_DIR)/main.c
 
 OBJS =$(SRCS:%=$(BUILD_DIR)/%.o)
 

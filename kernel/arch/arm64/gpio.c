@@ -1,14 +1,4 @@
-/**
- * This file contains everything used to control the gpio interface.
- * The gpio of the raspberry pi 3b is controlled from particuolar
- * registers.
- * Datasheet pages: 90-100.
- */
-
-#ifndef _GPIO_H_
-#define _GPIO_H_
-
-#include <libc/ctypes.h>
+#include <arch/arm64/gpio.h>
 
 /**
  *  GPIO registers. Used to control the gpio interface.
@@ -41,34 +31,53 @@
 #define GPPUDCLK0       (volatile uint32_t*)(0x3F000000+0x00200098)
 #define GPPUDCLK1       (volatile uint32_t*)(0x3F000000+0x0020009C)
 
-typedef uint8_t gpio_pin_t;
 
-typedef enum: uint8_t{
-    GPIO_INPUT = 0,
-    GPIO_OUTPUT = 1,
-    GPIO_FUNC0 = 4,
-    GPIO_FUNC1 = 5,
-    GPIO_FUNC2 = 6,
-    GPIO_FUNC3 = 7,
-    GPIO_FUNC4 = 3,
-    GPIO_FUNC5 = 2
-}gpio_pin_func_t;
+//number of pins controlled by a singular register
+#define PINS_PER_REG 10
+#define FUN_SIZE_BIT 3
 
-typedef enum: uint8_t{
-    GPIO_P_OFF = 0,
-    GPIO_PD_ON = 1,
-    GPIO_PU_ON = 2
-}gpio_pud_mode_t;
+static const volatile uint32_t* GPFSEL[] = {GPFSEL0, GPFSEL1, GPFSEL2, GPFSEL3, GPFSEL4, GPFSEL5};
 
-/**
- * Set a particular function to a specified pin.
- * See datasheet.
- */
-void gpio_fsel(gpio_pin_t pin, gpio_pin_func_t mode);
+void gpio_fsel(gpio_pin_t pin, gpio_pin_func_t mode){
+    volatile uint32_t* reg;
+    gpio_pin_t rel_pin;
+    uint8_t shift;
+    uint32_t r;
 
-/**
- *  Enable/Disable pull up or pull down mode for the pins.
- */
-void gpio_ppud(gpio_pin_t pin, gpio_pud_mode_t mode);
+    //get pin number relative to the register
+    rel_pin = pin%PINS_PER_REG;
+    //get register relative to the pin
+    reg = (volatile uint32_t*)GPFSEL[pin/PINS_PER_REG];
+    //posizion in bit of the function of the pin
+    shift = rel_pin*FUN_SIZE_BIT;
 
-#endif //_GPIO_H_
+    //read current value of the register
+    r = *reg;
+    //write 000 to the pin position
+    r &= ~(7 << shift);
+    //write the function to the register
+    r |= (mode << shift);
+
+    //write to the register
+    *reg = r;
+}
+
+void gpio_ppud(gpio_pin_t pin, gpio_pud_mode_t mode){
+    register uint16_t r;
+    volatile uint32_t* reg;
+
+    //choose witch register use in base of the pin
+    reg = pin/32 ? GPPUDCLK1 : GPPUDCLK0;
+    //set the mode in the register
+    *GPPUD = mode;
+    //way 150 cycles
+    for(r = 150; r; r--)
+        asm volatile("NOP");
+    //write the pin to apply the change
+    *reg = 1 << (pin%32);
+    //wait 150 cycles
+    for(r = 150; r; r--)
+        asm volatile("NOP");
+    //flush the register
+    *reg = 0;
+}

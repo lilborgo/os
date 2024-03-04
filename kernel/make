@@ -1,0 +1,2 @@
+include $(KER_DIR)/arch/make
+include $(KER_DIR)/libc/make

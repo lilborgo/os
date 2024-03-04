@@ -1,0 +1,5 @@
+ARM64_SRCS =	$(KER_DIR)/arch/arm64/boot.S\
+                $(KER_DIR)/arch/arm64/gpio.c\
+                $(KER_DIR)/arch/arm64/mailbox.c\
+                $(KER_DIR)/arch/arm64/uart1.c
+

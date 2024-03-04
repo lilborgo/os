@@ -1,13 +1,5 @@
-/**
- * Used to control the uart1.
- * This pheriperals is very basic, it can be used
- * without mailbox and is very limitate.
- * Check uart0.
- * Datasheet pages: 8
-*/
-
-#ifndef _UART1_H_
-#define _UART1_H_
+#include <arch/arm64/gpio.h>
+#include <arch/arm64/uart1.h>
 
 /**
  *  Uart register addresses. Used to comunicate with
@@ -27,31 +19,49 @@
 #define AUX_MU_STAT_REG     (volatile uint32_t*)(0x3F000000+0x00215064)
 #define AUX_MU_BAUD_REG     (volatile uint32_t*)(0x3F000000+0x00215068)
 
-/**
- *  First, enable the interface with default
- *  parameters.
- */
-void uart1_init();
+void uart1_init(){
+    *AUX_ENABLES = 1;
+    *AUX_MU_CNTL_REG = 0;
+    *AUX_MU_LCR_REG = 0;
+    *AUX_MU_MCR_REG = 3;
+    *AUX_MU_IER_REG = 0;
+    *AUX_MU_IIR_REG = 0xc6;
+    *AUX_MU_BAUD_REG = 270;
 
-/*
- * Write a single character to the uart interface.
- * NOTE: this function is blocking, it will not
- * return untile the character is written.
- * If the uart is constantly blocked, it will wait.
- */
-void uart1_putc(char c);
+    gpio_fsel(14, GPIO_FUNC5);
+    gpio_fsel(15, GPIO_FUNC5);
 
-/**
- *  Read a character from the uart interface.
- *  NOTE: this function is blocking, it will not
- *  return untile a character is recived.
- */
-char uart1_getc();
+    gpio_ppud(14, GPIO_P_OFF);
+    gpio_ppud(15, GPIO_P_OFF);
 
-/*
- *  Write a string to uart1.
- *  It also conver the \n character to the \r one.
- */
-void uart1_puts(char s[]);
+    *AUX_MU_CNTL_REG = 3;
+}
 
-#endif //_UART1_H_
+void uart1_putc(char c) {
+    //wait until we can send
+    while(!((*AUX_MU_LSR_REG) & 0x20))
+        asm volatile("NOP");
+
+    *AUX_MU_IO_REG = c;
+}
+
+char uart1_getc() {
+    char c;
+    //wait until something is in the buffe
+    while(!((*AUX_MU_LSR_REG) & 0x01))
+        asm volatile("NOP");
+
+    c = (char)*AUX_MU_IO_REG;
+
+    return c == '\r' ? '\n' : c;
+}
+
+void uart1_puts(char s[]) {
+    while(*s) {
+        if(*s == '\n')
+            uart1_putc('\r');
+
+        uart1_putc(*s);
+        s++;
+    }
+}

@@ -1,4 +1,4 @@
-#include <hw/uart1.h>
+#include <arch/arm64/uart1.h>
 #include <libc/stdio.h>
 
 void kernel_main(){

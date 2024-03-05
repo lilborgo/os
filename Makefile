@@ -39,6 +39,8 @@ SRCS = 	$(LIBC_SRCS)\
 
 OBJS =$(SRCS:%=$(BUILD_DIR)/%.o)
 
+all: kernel
+
 kernel: $(KER_ELF)
 	@true
 
@@ -56,6 +58,9 @@ qemu: $(KER_ELF)
 gdb: $(KER_ELF)
 	$(QEMU) -s -S $(QM_FLAGS) & gdb $(GDB_FLAGS)
 	-$(KILL)
+
+qemu-shell: $(KER_ELF)
+	@bash execute.sh "$(QEMU) -s -S $(QM_FLAGS)" &
 
 objd:
 	@$(OBJDU) -D -s $(KER_ELF) | less

@@ -1,4 +1,5 @@
 #include <arch/arm64/gpio.h>
+#include <arch/arm64/time.h>
 
 //number of pins controlled by a singular register
 #define PINS_PER_REG 10
@@ -31,21 +32,16 @@ void gpio_fsel(gpio_pin_t pin, gpio_pin_func_t mode){
 }
 
 void gpio_ppud(gpio_pin_t pin, gpio_pud_mode_t mode){
-    register uint16_t r;
     volatile uint32_t* reg;
 
     //choose witch register use in base of the pin
     reg = pin/32 ? GPPUDCLK1 : GPPUDCLK0;
     //set the mode in the register
     *GPPUD = mode;
-    //way 150 cycles
-    for(r = 150; r; r--)
-        asm volatile("NOP");
+    time_wait_cyc(150);
     //write the pin to apply the change
     *reg = 1 << (pin%32);
-    //wait 150 cycles
-    for(r = 150; r; r--)
-        asm volatile("NOP");
+    time_wait_cyc(150);
     //flush the register
     *reg = 0;
 }

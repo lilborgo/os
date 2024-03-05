@@ -37,7 +37,6 @@
 
 #include <libc/ctypes.h>
 #include <libc/stdbool.h>
-#include <libc/stdbool.h>
 
 /**
  * Size of the mailbox max size
@@ -66,11 +65,25 @@ typedef enum: uint8_t{
  * Types of tags for the mailbox.
  */
 typedef enum: uint32_t{
-    MBOX_TAG_SETCLKRATE = 0x00038002
+    MBOX_TAG_SETCLKRATE = 0x00038002,
+    MBOX_TAG_SETPOWER = 0x00028001
 }mbox_tag_t;
 
 typedef enum: uint32_t{
-    MBOX_UART_ID = 0x000000002
+    MBOX_EMMC_ID = 0x1,
+    MBOX_UART_ID = 0x2,
+    MBOX_ARM_ID = 0x3,
+    MBOX_CORE_ID = 0x4,
+    MBOX_V3D_ID = 0x5,
+    MBOX_H264_ID = 0x6,
+    MBOX_ISP_ID = 0x7,
+    MBOX_SDRAM_ID = 0x8,
+    MBOX_PIXEL_ID = 0x9,
+    MBOX_PWM_ID = 0xa,
+    MBOX_HEVC_ID = 0xb,
+    MBOX_EMMC2_ID = 0xc,
+    MBOX_M2MC_ID = 0xd,
+    MBOX_PIXEL_BVD_ID = 0xe
 }mbox_clkrate_id_t;
 
 /**

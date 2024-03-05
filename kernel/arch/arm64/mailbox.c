@@ -34,8 +34,6 @@ bool mbox_call(mbox_ch_t ch){
             /* is it a valid successful response? */
             return mbox_msg[1] == MBOX_RESPONSE;
     }
-
-    return false;
 }
 
 bool mbox_req(mbox_ch_t ch, mbox_tag_t tag, ...){
@@ -48,23 +46,20 @@ bool mbox_req(mbox_ch_t ch, mbox_tag_t tag, ...){
     switch(tag){
         case MBOX_TAG_SETCLKRATE:
             /*
-              Request:
-
-                    Length: 12
-                    Value:
-                        u32: clock id
-                        u32: rate (in Hz)
-                        u32: skip setting turbo
-
-                Response:
-
-                    Length: 8
-                    Value:
-                        u32: clock id
-                        u32: rate (in Hz)
+            Request:
+                Length: 12
+                Value:
+                    u32: clock id
+                    u32: rate (in Hz)
+                    u32: skip setting turbo
+            Response:
+                Length: 8
+                Value:
+                    u32: clock id
+                    u32: rate (in Hz)
             */
 
-            mbox_msg[0] = 9*sizeof(uint32_t);
+            mbox_msg[0] = 9 * sizeof(uint32_t);
             mbox_msg[1] = MBOX_REQUEST;
             mbox_msg[2] = MBOX_TAG_SETCLKRATE;
             mbox_msg[3] = 12;
@@ -74,6 +69,35 @@ bool mbox_req(mbox_ch_t ch, mbox_tag_t tag, ...){
             mbox_msg[7] = va_arg(list, uint32_t);
             mbox_msg[8] = 0;
             break;
+        case MBOX_TAG_SETPOWER:
+            /*
+            Request:
+                Length: 8
+                Value:
+                    u32: device id
+                    u32: state
+                    State:
+                        Bit 0: 0=off, 1=on
+                        Bit 1: 0=do not wait, 1=wait
+                        Bits 2-31: reserved for future use (set to 0)
+            Response:
+                Length: 8
+                Value:
+                    u32: device id
+                    u32: state
+                    State:
+                        Bit 0: 0=off, 1=on
+                        Bit 1: 0=device exists, 1=device does not exist
+                        Bits 2-31: reserved for future use
+            */
+            mbox_msg[0]= 8 * sizeof(uint32_t);
+            mbox_msg[1] = MBOX_REQUEST;
+            mbox_msg[2] = MBOX_TAG_SETPOWER;
+            mbox_msg[3] = 8;
+            mbox_msg[4] = 8;
+            mbox_msg[5]= va_arg(list, uint32_t);
+            mbox_msg[6] = 0;
+            mbox_msg[7] = 0;
         default:
             return false;
     }

@@ -41,6 +41,11 @@
 #define GPPUDCLK0       (volatile uint32_t*)(0x3F000000+0x00200098)
 #define GPPUDCLK1       (volatile uint32_t*)(0x3F000000+0x0020009C)
 
+/**
+ * Number of pins of the raspberry pi.
+ */
+#define GPIO_N_PINS 54
+
 typedef uint8_t gpio_pin_t;
 
 typedef enum: uint8_t{

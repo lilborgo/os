@@ -13,7 +13,9 @@
 void uart0_init(){
     *UART0_CR = 0;
 
-    mbox_req(MBOX_CH_PROP, MBOX_TAG_SETCLKRATE, MBOX_UART_ID, 4000000, 0);
+    mbox_reset();
+    mbox_add(MBOX_TAG_SETCLKRATE, MBOX_UART_ID, 4000000, 0);
+    mbox_call(MBOX_CH_PROP);
 
     gpio_fsel(14, GPIO_FUNC0);
     gpio_fsel(15, GPIO_FUNC0);

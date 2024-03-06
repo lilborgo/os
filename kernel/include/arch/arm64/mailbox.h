@@ -41,7 +41,7 @@
 /**
  * Size of the mailbox max size
  */
-#define MBOX_MSG_SIZE 36
+#define MBOX_MSG_SIZE 100
 
 /**
  * Mailbox message.
@@ -66,7 +66,8 @@ typedef enum: uint8_t{
  */
 typedef enum: uint32_t{
     MBOX_TAG_SETCLKRATE = 0x00038002,
-    MBOX_TAG_SETPOWER = 0x00028001
+    MBOX_TAG_SETPOWER = 0x00028001,
+    MBOX_TAG_GETARMMEM = 0x00010005
 }mbox_tag_t;
 
 typedef enum: uint32_t{
@@ -93,9 +94,13 @@ typedef enum: uint32_t{
 bool mbox_call(mbox_ch_t ch);
 
 /**
- * Create the message data structure and send to
- * the channel.
+ * Add a message to the mailbox.
  */
-bool mbox_req(mbox_ch_t ch, mbox_tag_t tag, ...);
+bool mbox_add(mbox_tag_t tag, ...);
+
+/**
+ * Initialize the mailbox message.
+ */
+void mbox_reset();
 
 #endif //_MAILBOX_H

@@ -13,8 +13,12 @@
 void power_shutdown(){
     register uint32_t r;
 
-    for(r = MBOX_EMMC_ID; r <= MBOX_PIXEL_BVD_ID; r++)
-        mbox_req(MBOX_CH_PROP, MBOX_TAG_SETPOWER, r);
+	mbox_reset();
+    for(r = MBOX_EMMC_ID; r <= MBOX_PIXEL_BVD_ID; r++){
+        mbox_add(MBOX_TAG_SETPOWER, r, 0);
+	}
+
+	mbox_call(MBOX_CH_PROP);
 
     for(r = 0; r < GPIO_N_PINS; r++)
         gpio_fsel(r, GPIO_INPUT);

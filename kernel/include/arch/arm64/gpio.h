@@ -76,4 +76,9 @@ void gpio_fsel(gpio_pin_t pin, gpio_pin_func_t mode);
  */
 void gpio_ppud(gpio_pin_t pin, gpio_pud_mode_t mode);
 
+/**
+ * Enable/Disable High Detect Enable Registers.
+ */
+void gpio_hen(gpio_pin_t pin, uint8_t val);
+
 #endif //_GPIO_H_

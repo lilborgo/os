@@ -14,6 +14,12 @@ KR_NAME = kernel-64
 KER_ELF = $(BUILD_DIR)/$(KR_NAME).elf
 #kernel img
 KER_IMG = $(BUILD_DIR)/$(KR_NAME).img
+#disk image
+DISK_IMG = $(BUILD_DIR)/disk.img
+#image creator
+QEMU_IMG = qemu-img
+#log file
+LOG_FILE = $(BUILD_DIR)/log
 
 #convert .config file into macros
 CC_MACRO = $(awk -F'=' '/^[^#]/ {printf "-D"$1"=" $2" " }' .config)
@@ -24,12 +30,12 @@ AS_FLAGS = -g
 #linker flags
 LD_FLAGS = -nostdlib
 #qemu flags
-QM_FLAGS = -machine raspi3b -kernel $(KER_ELF) -serial stdio
+QM_FLAGS = -machine raspi3b -kernel $(KER_ELF) -serial stdio -sd $(DISK_IMG)
 #gdb flags
 GDB_FLAGS = $(KER_ELF) -ex "target remote localhost:1234" -ex "lay split" -ex "set scheduler-locking step"
 
 #linker file
-LINKER = $(KER_DIR)/link.ld
+LINKER = $(KER_DIR)/linker.ld
 
 #object files
 include $(KER_DIR)/make
@@ -52,15 +58,18 @@ $(KER_IMG): $(KER_ELF)
 	@printf "\tOC $(KER_IMG)\n"
 	@$(OBJCP) -O binary $(KER_ELF) $(KER_IMG)
 
-qemu: $(KER_ELF)
+qemu: $(KER_ELF) $(DISK_IMG)
 	$(QEMU) $(QM_FLAGS)
 
-gdb: $(KER_ELF)
+gdb: $(KER_ELF) $(DISK_IMG)
 	$(QEMU) -s -S $(QM_FLAGS) & gdb $(GDB_FLAGS)
 	-$(KILL)
 
-qemu-shell: $(KER_ELF)
-	@bash execute.sh "$(QEMU) -s -S $(QM_FLAGS)" &
+qemu-shell: $(KER_ELF) $(DISK_IMG)
+	@bash exe.sh "$(QEMU) -s -S $(QM_FLAGS)"  $(LOG_FILE) &
+
+$(DISK_IMG):
+	@$(QEMU_IMG) create -f qcow2 $(DISK_IMG) 128M
 
 objd:
 	@$(OBJDU) -D -s $(KER_ELF) | less

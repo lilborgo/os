@@ -45,3 +45,14 @@ void gpio_ppud(gpio_pin_t pin, gpio_pud_mode_t mode){
     //flush the register
     *reg = 0;
 }
+
+void gpio_hen(gpio_pin_t pin, uint8_t val){
+    volatile uint32_t* reg;
+    gpio_pin_t rel;
+
+    reg = pin/32 ? GPHEN1 : GPHEN0;
+    rel = pin%32;
+
+    *reg &= ~(1 << rel);
+    *reg |= (val&0x1) << rel;
+}

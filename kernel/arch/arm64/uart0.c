@@ -59,3 +59,60 @@ void uart0_puts(char s[]) {
     }
 }
 
+void uart0_hex(uint64_t val, uint8_t bskip){
+    int8_t n;
+    int16_t p;
+
+    val >>= bskip;
+
+    for(p = 60-bskip; p >= 0 ; p-=4) {
+        //get the 4bit ad the b position
+        n = (val >> p) & 0xF;
+        n += n > 9? 'A'-9 : '0';
+        uart0_putc(n);
+    }
+}
+
+void uart0_dump(void *start, uint64_t nbytes){
+    uint8_t* line, *end;
+    uint8_t val, byte;
+
+    end = start + nbytes;
+
+    //iterate every line of the memory block
+    for(line = start; line < end ; line += 16){
+        //print the address of the line
+        uart0_hex((uint64_t)line, 32);
+        uart0_puts(": ");
+
+        //iterate every byte of the line and print the hex value
+        for(byte = 0; byte < 16; byte++) {
+            //print the upper 4bit
+            val = *(line+byte);
+            val >>= 4;
+            uart0_putc(val > 9? val + 'a'-9 : val + '0');
+
+            //print the lower 4bit
+            val = *(line+byte);
+            val &= 0xF;
+            uart0_putc(val > 9? val + 'a'-9 : val + '0');
+
+            //separator every byte
+            uart0_putc(' ');
+
+            //separetor every 8 byte
+            if(byte % 4 == 3)
+                uart0_putc(' ');
+        }
+
+        //print the memory if its a printable character, else print '.'
+        for(byte = 0; byte < 16; byte++) {
+            val = *(line + byte);
+            uart0_putc(val < 32 || val >= 127? '.' : (char)val);
+        }
+
+        uart0_putc('\r');
+        uart0_putc('\n');
+    }
+}
+
